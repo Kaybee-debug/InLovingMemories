@@ -4,6 +4,7 @@
       <p class="quote">"Those we love never truly leave us."</p>
       <div class="line" />
       <p class="note">A digital sanctuary — built with love, in his honor.</p>
+      <p class="credit">Developed by Malehu</p>
     </div>
   </footer>
 </template>
@@ -37,5 +38,13 @@
   font-size: 0.85rem;
   color: var(--muted-foreground);
   letter-spacing: 0.02em;
+}
+
+.credit {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
 }
 </style>
