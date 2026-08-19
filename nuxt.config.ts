@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    adminPassword: process.env.ADMIN_PASSWORD || '',
+    adminSessionSecret: process.env.ADMIN_SESSION_SECRET || '',
+  },
   app: {
     head: {
       title: 'In Loving Memory — Forever in Our Hearts',

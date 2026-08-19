@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { quotes } from '~/data/memorial'
+const { content } = useMemorialContent()
 
 useSeoMeta({ title: 'Quotes & Lessons — In Loving Memory' })
 
 const index = ref(0)
-const featured = computed(() => quotes[index.value])
+const quotes = computed(() => content.value.quotes)
+const featured = computed(() => quotes.value[index.value] || quotes.value[0])
 
 function next() {
-  index.value = (index.value + 1) % quotes.length
+  if (!quotes.value.length) return
+  index.value = (index.value + 1) % quotes.value.length
 }
 
 onMounted(() => {
+  if (!quotes.value.length) return
   const day = Math.floor(Date.now() / 86400000)
-  index.value = day % quotes.length
+  index.value = day % quotes.value.length
 })
 </script>
 
@@ -27,15 +30,15 @@ onMounted(() => {
 
       <section class="today fade-up-delay">
         <p class="eyebrow">Today's Reflection</p>
-        <blockquote>"{{ featured.text }}"</blockquote>
-        <p class="theme">{{ featured.theme }}</p>
+        <blockquote v-if="featured">"{{ featured.text }}"</blockquote>
+        <p v-if="featured" class="theme">{{ featured.theme }}</p>
         <button class="btn btn-ghost" type="button" @click="next">Another reflection</button>
       </section>
 
       <section class="all">
         <h2>Everything he taught us</h2>
         <div class="grid">
-          <article v-for="(quote, i) in quotes" :key="quote.theme" class="card fade-up" :style="{ animationDelay: `${i * 0.04}s` }">
+          <article v-for="(quote, i) in quotes" :key="`${quote.theme}-${i}`" class="card fade-up" :style="{ animationDelay: `${i * 0.04}s` }">
             <span class="mark" aria-hidden="true">"</span>
             <p>{{ quote.text }}</p>
             <footer>— {{ quote.theme }}</footer>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { storyTimeline } from '~/data/memorial'
+const { content } = useMemorialContent()
 
 useSeoMeta({ title: 'His Story — In Loving Memory' })
 </script>
@@ -8,16 +8,17 @@ useSeoMeta({ title: 'His Story — In Loving Memory' })
   <div class="page">
     <div class="container">
       <PageHero
-        eyebrow="A Life Well Lived"
-        title="His Story"
-        lede="From a curious boy by the river to the man who taught us everything about love."
+        :eyebrow="content.story.eyebrow"
+        :title="content.story.title"
+        :lede="content.story.lede"
       />
 
       <ol class="timeline">
         <li
-          v-for="(item, i) in storyTimeline"
-          :key="item.year"
+          v-for="(item, i) in content.story.timeline"
+          :key="`${item.title}-${i}`"
           class="item fade-up"
+
           :style="{ animationDelay: `${i * 0.06}s` }"
         >
           <div class="marker">

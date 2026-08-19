@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { familyTree } from '~/data/memorial'
+const { content } = useMemorialContent()
+const familyTree = computed(() => content.value.family)
 
 useSeoMeta({ title: 'Family Tree — In Loving Memory' })
 </script>
@@ -62,7 +63,7 @@ useSeoMeta({ title: 'Family Tree — In Loving Memory' })
           </div>
         </template>
 
-        <p class="epigraph">"Every branch bends toward the sun he planted us in."</p>
+        <p class="epigraph">{{ familyTree.epigraph }}</p>
       </div>
     </div>
   </div>

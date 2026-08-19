@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { videos } from '~/data/memorial'
+const { content } = useMemorialContent()
 
 useSeoMeta({ title: 'Videos — In Loving Memory' })
 </script>
@@ -15,7 +15,7 @@ useSeoMeta({ title: 'Videos — In Loving Memory' })
 
       <div class="grid">
         <article
-          v-for="(video, i) in videos"
+          v-for="(video, i) in content.videos"
           :key="video.title"
           class="video fade-up"
           :style="{

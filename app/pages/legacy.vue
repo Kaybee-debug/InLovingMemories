@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { legacyValues } from '~/data/memorial'
+const { content } = useMemorialContent()
 
-useSeoMeta({ title: 'His Legacy — In Loving Memory' })
-
-const contribution = ref('')
-const contributions = ref<string[]>([])
-
-function add() {
-  if (!contribution.value.trim()) return
-  contributions.value.unshift(contribution.value.trim())
-  contribution.value = ''
-}
+useSeoMeta({
+  title: 'Legacy — In Loving Memory',
+  description: 'The values he lived by, the lessons he left, the light he passed on.',
+})
 </script>
 
 <template>
@@ -24,8 +18,8 @@ function add() {
 
       <div class="values">
         <article
-          v-for="(value, i) in legacyValues"
-          :key="value.title"
+          v-for="(value, i) in content.legacy.values"
+          :key="`${value.title}-${i}`"
           class="value fade-up"
           :style="{ animationDelay: `${i * 0.05}s` }"
         >
@@ -35,27 +29,36 @@ function add() {
         </article>
       </div>
 
+      <section class="resting fade-up-delay">
+        <figure class="stone">
+          <img
+            :src="content.legacy.resting.imageSrc"
+            :alt="content.legacy.resting.imageAlt"
+          />
+        </figure>
+
+        <div class="resting-copy">
+          <p class="eyebrow">{{ content.legacy.resting.eyebrow }}</p>
+          <h2>{{ content.legacy.resting.heading }}</h2>
+          <p class="epitaph">{{ content.legacy.resting.epitaph }}</p>
+          <p class="note">
+            {{ content.legacy.resting.note }}
+          </p>
+          <p class="verse">
+            {{ content.legacy.resting.verse }}
+          </p>
+        </div>
+      </section>
+
       <section class="gift fade-up-delay-2">
         <p class="eyebrow">The lasting gift</p>
         <blockquote>
-          "You will not be remembered for what you had, but for who you helped become."
+          "{{ content.legacy.giftQuote }}"
         </blockquote>
         <p class="note">
-          Every child he raised, every friend he steadied, every grandchild who now says
-          "because Papa said so" — that is his legacy. And it grows a little every day.
+          {{ content.legacy.giftNote }}
         </p>
-
-        <form class="form" @submit.prevent="add">
-          <input
-            v-model="contribution"
-            placeholder="How does his legacy live in you?"
-          />
-          <button class="btn" type="submit">Add to his legacy</button>
-        </form>
-
-        <ul v-if="contributions.length" class="added">
-          <li v-for="(item, i) in contributions" :key="i">{{ item }}</li>
-        </ul>
+        <NuxtLink to="/memories" class="btn">Add to his legacy</NuxtLink>
       </section>
     </div>
   </div>
@@ -99,6 +102,65 @@ function add() {
   font-size: 0.95rem;
 }
 
+.resting {
+  display: grid;
+  gap: 1.75rem;
+  align-items: center;
+  margin-bottom: 3rem;
+  padding: 1.25rem;
+  border-radius: 1.4rem;
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 92%, transparent);
+}
+
+.stone {
+  margin: 0;
+  overflow: hidden;
+  border-radius: 1.1rem;
+}
+
+.stone img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+.resting-copy {
+  text-align: center;
+  padding: 0 0.5rem 0.5rem;
+}
+
+.resting-copy h2 {
+  font-size: clamp(1.7rem, 3.5vw, 2.3rem);
+  color: var(--forest);
+  margin: 0.55rem 0 1rem;
+}
+
+.dark .resting-copy h2 {
+  color: var(--foreground);
+}
+
+.epitaph {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.35rem;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.verse {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--forest);
+  line-height: 1.5;
+  margin-top: 1rem;
+}
+
+.dark .verse {
+  color: var(--foreground);
+}
+
 .gift {
   max-width: 680px;
   margin: 0 auto;
@@ -130,45 +192,16 @@ function add() {
   line-height: 1.55;
 }
 
-.form {
-  display: grid;
-  gap: 0.75rem;
-  justify-items: center;
-}
+@media (min-width: 860px) {
+  .resting {
+    grid-template-columns: 0.9fr 1.1fr;
+    padding: 1.5rem;
+    text-align: left;
+  }
 
-input {
-  width: min(100%, 420px);
-  border: 1px solid var(--border);
-  background: color-mix(in oklch, var(--background) 80%, transparent);
-  color: var(--foreground);
-  border-radius: 999px;
-  padding: 0.85rem 1.15rem;
-  outline: none;
-  font: inherit;
-}
-
-input:focus {
-  border-color: color-mix(in oklch, var(--gold) 60%, var(--border));
-}
-
-.added {
-  list-style: none;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 0.55rem;
-}
-
-.added li {
-  font-family: var(--font-serif);
-  font-style: italic;
-  color: var(--forest);
-  padding: 0.75rem 1rem;
-  border-radius: 0.85rem;
-  background: color-mix(in oklch, var(--secondary) 80%, transparent);
-}
-
-.dark .added li {
-  color: var(--foreground);
+  .resting-copy {
+    text-align: left;
+    padding: 0.5rem 1rem 0.5rem 0.25rem;
+  }
 }
 </style>

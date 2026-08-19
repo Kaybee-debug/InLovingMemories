@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { galleryFilters, galleryPhotos } from '~/data/memorial'
+import type { GalleryPhoto } from '~/types/content'
+
+const { content } = useMemorialContent()
 
 useSeoMeta({ title: 'Photo Gallery — In Loving Memory' })
 
-const active = ref<(typeof galleryFilters)[number]>('All')
-const selected = ref<(typeof galleryPhotos)[number] | null>(null)
+const active = ref('All')
+const selected = ref<GalleryPhoto | null>(null)
+
+const filters = computed(() => {
+  const cats = [...new Set(content.value.gallery.map((photo) => photo.category))]
+  return ['All', ...cats]
+})
 
 const filtered = computed(() =>
   active.value === 'All'
-    ? galleryPhotos
-    : galleryPhotos.filter((p) => p.category === active.value),
+    ? content.value.gallery
+    : content.value.gallery.filter((p) => p.category === active.value),
 )
 
 function onKey(e: KeyboardEvent) {
@@ -31,7 +38,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
 
       <div class="filters fade-up-delay" role="tablist" aria-label="Gallery filters">
         <button
-          v-for="filter in galleryFilters"
+          v-for="filter in filters"
           :key="filter"
           type="button"
           class="chip"

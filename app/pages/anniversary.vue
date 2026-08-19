@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { farewellDate } from '~/data/memorial'
+import { formatLongDate } from '~/data/memorial'
+
+const { content } = useMemorialContent()
 
 useSeoMeta({ title: 'Anniversary — In Loving Memory' })
 
 const elapsed = computed(() => {
+  const farewellDate = new Date(`${content.value.person.deathDate}T12:00:00`)
   const now = new Date()
   let years = now.getFullYear() - farewellDate.getFullYear()
   let months = now.getMonth() - farewellDate.getMonth()
@@ -64,13 +67,15 @@ const elapsed = computed(() => {
         <p class="total">
           {{ elapsed.totalDays }} days of missing you — and remembering everything.
         </p>
-        <p class="dates-note">Passed away 9 July 2024 · Laid to rest 14 July 2024</p>
+        <p class="dates-note">
+          Passed away {{ formatLongDate(content.person.deathDate) }} · Laid to rest
+          {{ formatLongDate(content.person.burialDate) }}
+        </p>
 
         <blockquote>
-          Though we cannot see you, we feel you in the soft morning light,
-          in the pause between our words, in the small acts of kindness we choose because of you.
+          {{ content.anniversary.farewell }}
         </blockquote>
-        <p class="sign">— Rest gently, dear Papa.</p>
+        <p class="sign">{{ content.anniversary.signOff }}</p>
       </section>
     </div>
   </div>

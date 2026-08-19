@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { memories as seedMemories } from '~/data/memorial'
+import { relationOptions } from '~/data/memorial'
+
+const { content, refresh } = useMemorialContent()
 
 useSeoMeta({ title: 'Memories — In Loving Memory' })
 
@@ -21,49 +23,39 @@ function formatDisplayDate(value: string) {
   })
 }
 
-const relationOptions = [
-  'Wife',
-  'Husband',
-  'Son',
-  'Daughter',
-  'Grandson',
-  'Granddaughter',
-  'Brother',
-  'Sister',
-  'Father',
-  'Mother',
-  'Uncle',
-  'Aunt',
-  'Cousin',
-  'Nephew',
-  'Niece',
-  'Friend',
-  'Colleague',
-  'Church member',
-  'Neighbor',
-  'Other',
-] as const
-
-const memories = ref([...seedMemories])
 const form = reactive({
   quote: '',
   name: '',
   relation: '',
   date: todayInputValue(),
 })
+const submitting = ref(false)
+const submitError = ref('')
 
-function addMemory() {
+async function addMemory() {
   if (!form.quote.trim() || !form.name.trim() || !form.relation || !form.date) return
-  memories.value.unshift({
-    quote: form.quote.trim(),
-    name: form.name.trim(),
-    relation: form.relation,
-    date: formatDisplayDate(form.date),
-  })
-  form.quote = ''
-  form.name = ''
-  form.relation = ''
-  form.date = todayInputValue()
+  submitting.value = true
+  submitError.value = ''
+  try {
+    await $fetch('/api/memories', {
+      method: 'POST',
+      body: {
+        quote: form.quote.trim(),
+        name: form.name.trim(),
+        relation: form.relation,
+        date: formatDisplayDate(form.date),
+      },
+    })
+    form.quote = ''
+    form.name = ''
+    form.relation = ''
+    form.date = todayInputValue()
+    await refresh()
+  } catch {
+    submitError.value = 'Could not save this memory. Please try again.'
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -99,13 +91,16 @@ function addMemory() {
             <span>Date written</span>
             <input v-model="form.date" type="date" required />
           </label>
-          <button class="btn" type="submit">Add memory</button>
+          <p v-if="submitError" class="error">{{ submitError }}</p>
+          <button class="btn" type="submit" :disabled="submitting">
+            {{ submitting ? 'Saving…' : 'Add memory' }}
+          </button>
         </form>
       </section>
 
       <div class="list">
         <article
-          v-for="(memory, i) in memories"
+          v-for="(memory, i) in content.memories"
           :key="`${memory.name}-${memory.date}-${i}`"
           class="memory fade-up"
           :style="{ animationDelay: `${i * 0.05}s` }"
@@ -211,6 +206,11 @@ input:focus,
 select:focus {
   border-color: color-mix(in oklch, var(--gold) 60%, var(--border));
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--gold) 18%, transparent);
+}
+
+.error {
+  color: #8a3b32;
+  margin: 0;
 }
 
 .list {

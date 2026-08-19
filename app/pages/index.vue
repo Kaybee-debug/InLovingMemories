@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { content } = useMemorialContent()
+
 useSeoMeta({
   title: 'In Loving Memory — Forever in Our Hearts',
 })
@@ -13,21 +15,21 @@ useSeoMeta({
       </div>
 
       <div class="hero-copy fade-up">
-        <p class="dates">1958 — 2024</p>
+        <p class="dates">{{ content.person.yearsLabel }}</p>
         <h1>
           In Loving
           <em>Memory</em>
         </h1>
         <div class="divider" />
-        <p class="tagline">Forever in our hearts, forever in our memories.</p>
+        <p class="tagline">{{ content.person.tagline }}</p>
         <NuxtLink to="/story" class="btn cta">Celebrate His Life →</NuxtLink>
       </div>
 
       <div class="portrait-wrap fade-up-delay">
         <figure class="portrait">
-          <img src="/images/portrait.png" alt="A portrait of our beloved father" />
+          <img :src="content.person.portraitSrc" :alt="content.person.fullName" />
         </figure>
-        <p class="caption">Our dearest Papa</p>
+        <p class="caption">{{ content.person.caption }}</p>
       </div>
 
       <a href="#remember" class="scroll" aria-label="Scroll">Scroll ↓</a>
@@ -36,8 +38,7 @@ useSeoMeta({
     <section id="remember" class="remember">
       <div class="container-narrow fade-up">
         <blockquote>
-          "A husband, a father, and a pastor — he never failed to deliver the word of God.
-          His voice still echoes in our hearts."
+          "{{ content.person.homeQuote }}"
         </blockquote>
 
         <div class="actions">
