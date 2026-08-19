@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   if (!isPasswordConfigured()) {
     throw createError({
       statusCode: 503,
-      statusMessage: 'Set ADMIN_PASSWORD in Netlify environment variables first.',
+      statusMessage: 'Set ADMIN_PASSWORD in Vercel environment variables first.',
     })
   }
 

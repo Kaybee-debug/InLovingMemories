@@ -154,7 +154,7 @@ onMounted(loadSession)
         </p>
 
         <p v-if="!session.configured" class="alert">
-          Ask the site owner to set <strong>ADMIN_PASSWORD</strong> in Netlify before this login will work.
+          Ask the site owner to set <strong>ADMIN_PASSWORD</strong> in Vercel before this login will work.
         </p>
 
         <form v-else class="form" @submit.prevent="login">

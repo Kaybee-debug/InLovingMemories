@@ -3,18 +3,39 @@ import { join } from 'node:path'
 import { defaultContent } from '../../app/data/memorial'
 import type { SiteContent } from '../../app/types/content'
 
-const CONTENT_KEY = 'site-content'
-const MEDIA_PREFIX = 'media/'
+const CONTENT_PATH = 'memorial/site-content.json'
 
 function localFile() {
   return join(process.cwd(), '.data', 'site-content.json')
 }
 
-async function blobStore() {
-  if (!process.env.NETLIFY && !process.env.NETLIFY_BLOBS_CONTEXT) return null
+function blobToken() {
+  return process.env.BLOB_READ_WRITE_TOKEN || ''
+}
+
+function onVercel() {
+  return Boolean(process.env.VERCEL)
+}
+
+async function vercelPut(pathname: string, body: string | Buffer, contentType: string, cacheControlMaxAge = 0) {
+  const { put } = await import('@vercel/blob')
+  return put(pathname, body, {
+    access: 'public',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType,
+    token: blobToken() || undefined,
+    cacheControlMaxAge,
+  })
+}
+
+async function vercelReadJson(pathname: string) {
+  const { head } = await import('@vercel/blob')
   try {
-    const { getStore } = await import('@netlify/blobs')
-    return getStore({ name: 'memorial', consistency: 'strong' })
+    const meta = await head(pathname, { token: blobToken() || undefined })
+    const res = await fetch(meta.url, { cache: 'no-store' })
+    if (!res.ok) return null
+    return (await res.json()) as Partial<SiteContent>
   } catch {
     return null
   }
@@ -55,10 +76,12 @@ function mergeContent(saved: Partial<SiteContent> | null): SiteContent {
 }
 
 export async function readContent(): Promise<SiteContent> {
-  const store = await blobStore()
-  if (store) {
-    const saved = (await store.get(CONTENT_KEY, { type: 'json' })) as Partial<SiteContent> | null
-    return mergeContent(saved)
+  if (blobToken()) {
+    try {
+      return mergeContent(await vercelReadJson(CONTENT_PATH))
+    } catch {
+      return defaultContent
+    }
   }
 
   try {
@@ -70,9 +93,15 @@ export async function readContent(): Promise<SiteContent> {
 }
 
 export async function writeContent(content: SiteContent) {
-  const store = await blobStore()
-  if (store) {
-    await store.setJSON(CONTENT_KEY, content)
+  if (onVercel() && !blobToken()) {
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Add a Vercel Blob store so family edits can be saved.',
+    })
+  }
+
+  if (blobToken()) {
+    await vercelPut(CONTENT_PATH, JSON.stringify(content), 'application/json', 0)
     return
   }
 
@@ -81,29 +110,23 @@ export async function writeContent(content: SiteContent) {
 }
 
 export async function saveMedia(id: string, data: Buffer, contentType: string) {
-  const store = await blobStore()
-  if (store) {
-    await store.set(`${MEDIA_PREFIX}${id}`, data, { metadata: { contentType } })
-    return `/api/media/${id}`
+  const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg'
+
+  if (onVercel() && !blobToken()) {
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Add a Vercel Blob store so photos can be uploaded.',
+    })
+  }
+
+  if (blobToken()) {
+    const blob = await vercelPut(`memorial/media/${id}.${ext}`, data, contentType, 60 * 60 * 24 * 365)
+    return blob.url
   }
 
   const uploads = join(process.cwd(), 'public', 'uploads')
   await mkdir(uploads, { recursive: true })
-  const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg'
   const filename = `${id}.${ext}`
   await writeFile(join(uploads, filename), data)
   return `/uploads/${filename}`
-}
-
-export async function readMedia(id: string) {
-  const store = await blobStore()
-  if (!store) return null
-  const key = `${MEDIA_PREFIX}${id}`
-  const data = await store.get(key, { type: 'arrayBuffer' })
-  if (!data) return null
-  const meta = await store.getMetadata(key)
-  return {
-    data: Buffer.from(data),
-    contentType: String(meta?.metadata?.contentType || 'image/jpeg'),
-  }
 }
